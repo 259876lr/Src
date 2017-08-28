@@ -1,0 +1,180 @@
+﻿@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@model WorkTask
+@{
+    var fact = EntityFactory.CreateOperate(ViewData.ModelMetadata.ModelType);
+    var isNew = (Model as IEntity).IsNullKey;
+}
+<div class="panel panel-default">
+    <div class="form-horizontal">
+        @if (ViewBag.StatusMessage != null)
+        {
+            <div class="alert alert-success alert-dismissible text-center" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <strong>@ViewBag.StatusMessage</strong>
+            </div>
+        }
+        @if (!isNew)
+        {
+            @Html.Partial("_Form_Nav", Model)
+        }
+        @{
+            var rv = new RouteValueDictionary();
+            if (isNew)
+            {
+                rv.Add("ParentID", Model.ParentID);
+            }
+            else
+            {
+                rv.Add("id", Model.ID);
+            }
+        }
+        @using (Html.BeginForm((isNew ? "Add" : "Edit"), null, rv))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary()
+            // 存在父任务时，显示父任务
+            if (Model.Parent != null)
+            {
+                <div class="form-group">
+                    <label class="control-label col-xs-2 col-sm-2">父任务</label>
+                    <div class="col-xs-10 col-sm-6 col-md-4">
+                        @Html.ForInt("ParentID", Model.ParentID)
+                        @Html.ActionLink(Model.ParentName, "Edit", new { ID = Model.ParentID }, new { target = "_blank" })
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label class="control-label col-xs-2 col-sm-2">父任务</label>
+                    <div class="col-xs-10 col-sm-6 col-md-4">
+                        @Html.ForInt("ParentID", Model.ParentID)
+                    </div>
+                </div>
+            }
+            <div class="form-group">
+                @Html.Partial("_Form_Item", new Pair(Model, WorkTask._.Name))
+            </div>
+            <div class="form-group">
+                @Html.Partial("_Form_Item", new Pair(Model, WorkTask._.Content))
+            </div>
+            //新增任务不能设定状态和进度
+            if (!isNew)
+            {
+                <div class="form-group">
+                    <label class="control-label col-xs-2 col-sm-2">状态</label>
+                    <div class="col-xs-10 col-sm-6 col-md-4">
+                        @Model.TaskStatus &nbsp;
+                        @if (Model.TaskStatus == TaskStatus.进行中)
+                        {
+                            @Html.ActionLink("计划", "SetStatus", "Task", new { id = Model.ID, status = TaskStatus.计划 }, new { @class = "btn btn-info" })
+                            @Html.ActionLink("暂停", "SetStatus", "Task", new { id = Model.ID, status = TaskStatus.暂停 }, new { @class = "btn btn-alert" })
+                            @Html.ActionLink("取消", "SetStatus", "Task", new { id = Model.ID, status = TaskStatus.取消 }, new { @class = "btn btn-danger" })
+                            @Html.ActionLink("完成", "SetStatus", "Task", new { id = Model.ID, status = TaskStatus.完成 }, new { @class = "btn btn-success" })
+                        }
+                        else
+                        {
+                            @Html.ActionLink("进行", "SetStatus", "Task", new { id = Model.ID, status = TaskStatus.进行中 }, new { @class = "btn btn-info" })
+                        }
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.Partial("_Form_Item", new Pair(Model, WorkTask._.Progress))
+                </div>
+            }
+            <div class="form-group">
+                <label class="control-label col-xs-2 col-sm-2">优先级</label>
+                <div class="col-xs-10 col-sm-6 col-md-4">
+                    @(Html.ForEnum(WorkTask._.Priority.Name, Model.TaskPriority))
+                    <span class="alert-danger">
+                        @Html.ValidationMessage(WorkTask._.Priority.Name)
+                    </span>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Partial("_Form_Item", new Pair(Model, WorkTask._.Score))
+                @*子任务才会显示积分百分比*@
+            </div>
+            if (!isNew && Model.ParentID != 0)
+            {
+                <div class="form-group">
+                    <label class="control-label col-xs-2 col-sm-2">同级比重</label>
+                    <div class="col-md-4">
+                        @Model.Percent<text>%</text>
+                    </div>
+                </div>
+            }
+            <div class="form-group">
+                @Html.Partial("_Form_Item", new Pair(Model, WorkTask._.LockScore))
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2 col-sm-2">负责人</label>
+                <div class="col-xs-10 col-sm-6 col-md-4">
+                    @Html.ForDropDownList(WorkTask._.MasterID, UserX.FindAllWithCache())
+                    <span class="alert-danger">
+                        @Html.ValidationMessage(WorkTask._.MasterID.Name)
+                    </span>
+                </div>
+            </div>
+            @*<div class="form-group">
+                    <label class="control-label col-xs-2 col-sm-2 col-md-4">成员</label>
+                    <div class="col-xs-10 col-sm-6 col-md-4">
+                        @Html.ForListBox("MemberIDs", UserX.FindAllWithCache())
+                    </div>
+                </div>*@
+            <div class="form-group">
+                @Html.Partial("_Form_Item", new Pair(Model, WorkTask._.PlanStartTime))
+            </div>
+            <div class="form-group">
+                @Html.Partial("_Form_Item", new Pair(Model, WorkTask._.PlanEndTime))
+            </div>
+            <div class="form-group">
+                @Html.Partial("_Form_Item", new Pair(Model, WorkTask._.LockPlanTime))
+            </div>
+            if (!isNew)
+            {
+                <div class="form-group">
+                    <label class="control-label col-xs-2 col-sm-2">实际时间</label>
+                    <div class="col-xs-12 col-sm-4 col-md-4">
+                        <span class="middle">
+                            @Model.StartTime.ToFullString("") 到 @Model.EndTime.ToFullString("") 共 @Model.Cost.ToString("n0") 工作日
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2 col-sm-2">浏览/修改/评论</label>
+                    <div class="col-md-4">
+                        <span class="middle">
+                            @Model.Views.ToString("n0") /
+                            @Model.Historys.ToString("n0") /
+                            @Model.Comments.ToString("n0")
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2 col-sm-2">创建</label>
+                    <div class="col-md-4">
+                        <span class="middle">
+                            @Model.CreateUserName @Model.CreateTime.ToFullString("")
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2 col-sm-2">更新</label>
+                    <div class="col-md-4">
+                        <span class="middle">
+                            @Model.UpdateUserName @Model.UpdateTime.ToFullString("")
+                        </span>
+                    </div>
+                </div>
+            }
+            <div class="form-actions">
+                <label class="control-label col-xs-2 col-sm-2"></label>
+                <button type="submit" class="btn btn-success"><i class="glyphicon glyphicon-@(isNew ? "plus" : "save")"></i><strong>@(isNew ? "新增" : "保存")</strong></button>
+                <button type="button" class="btn btn-danger" onclick="history.go(-1);"><i class="glyphicon glyphicon-remove"></i><strong>取消</strong></button>
+            </div>
+        }
+    </div>
+</div>

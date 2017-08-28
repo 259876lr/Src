@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Tables Version="8.20.5788.37892">
+  <Table Name="WorkTask" Description="任务" DbType="SqlServer" 页面分类="Task">
+    <Columns>
+      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="Name" DataType="String" Master="True" Description="名称" />
+      <Column Name="ParentID" DataType="Int32" Description="父任务。顶级任务的父任务为0" />
+      <Column Name="ChildCount" DataType="Int32" Description="子任务数" />
+      <Column Name="Score" DataType="Int32" Description="积分。全局权重，可用于绩效考核" />
+      <Column Name="LockScore" DataType="Boolean" Description="积分锁定。锁定后，下一级子任务积分总和不能超过当前任务" />
+      <Column Name="Percent" DataType="Int32" Description="同级比重。0~100在同级任务中的比重百分比" />
+      <Column Name="Priority" DataType="Int32" Description="优先级。数字越大优先级越高" />
+      <Column Name="Status" DataType="Int32" Description="状态。准备、进行、暂停、取消、完成" />
+      <Column Name="PlanStartTime" DataType="DateTime" Description="计划开始时间" />
+      <Column Name="PlanEndTime" DataType="DateTime" Description="计划结束时间" />
+      <Column Name="PlanCost" DataType="Int32" Description="计划工作日。需要多少个工作日" />
+      <Column Name="LockPlanTime" DataType="Boolean" Description="计划时间锁定。锁定后，子任务的计划时间不得超过父任务" />
+      <Column Name="StartTime" DataType="DateTime" Description="开始时间" />
+      <Column Name="EndTime" DataType="DateTime" Description="结束时间" />
+      <Column Name="Cost" DataType="Int32" Description="实际工作日" />
+      <Column Name="Progress" DataType="Int32" Description="进度。0到100" />
+      <Column Name="MasterID" DataType="Int32" Description="负责人" />
+      <Column Name="Views" DataType="Int32" Description="浏览数" />
+      <Column Name="Historys" DataType="Int32" Description="修改次数" />
+      <Column Name="Comments" DataType="Int32" Description="评论数" />
+      <Column Name="LastComment" DataType="DateTime" Description="最后评论" />
+      <Column Name="Deleted" DataType="Boolean" Description="已删除" />
+      <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
+      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
+      <Column Name="UpdateUserID" DataType="Int32" Description="更新者" />
+      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
+      <Column Name="Content" DataType="String" Length="500" Description="内容" />
+    </Columns>
+    <Indexes>
+      <Index Columns="Name,ParentID" Unique="True" />
+      <Index Columns="Name" />
+      <Index Columns="ParentID" />
+      <Index Columns="MasterID" />
+      <Index Columns="Status" />
+    </Indexes>
+    <Relations>
+      <Relation Column="ParentID" RelationTable="WorkTask" RelationColumn="ID" />
+      <Relation Column="MasterID" RelationTable="User" RelationColumn="ID" />
+      <Relation Column="CreateUserID" RelationTable="User" RelationColumn="ID" />
+      <Relation Column="UpdateUserID" RelationTable="User" RelationColumn="ID" />
+    </Relations>
+  </Table>
+  <Table Name="TaskMember" Description="任务成员" DbType="SqlServer" 页面分类="Task">
+    <Columns>
+      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="WorkTaskID" DataType="Int32" Description="任务" />
+      <Column Name="MemberID" DataType="Int32" Description="成员" />
+      <Column Name="Kind" DataType="Int32" Description="种类" />
+      <Column Name="Views" DataType="Int32" Description="浏览数" />
+      <Column Name="Historys" DataType="Int32" Description="修改次数" />
+      <Column Name="LastViewTime" DataType="DateTime" Description="最后查看时间" />
+      <Column Name="LastUpdateTime" DataType="DateTime" Description="最后更新时间" />
+    </Columns>
+    <Indexes>
+      <Index Columns="WorkTaskID" />
+      <Index Columns="MemberID" />
+      <Index Columns="WorkTaskID,Kind" />
+    </Indexes>
+    <Relations>
+      <Relation Column="WorkTaskID" RelationTable="WorkTask" RelationColumn="ID" />
+      <Relation Column="MemberID" RelationTable="User" RelationColumn="ID" />
+    </Relations>
+  </Table>
+  <Table Name="TaskHistory" Description="任务历史" DbType="SqlServer" 页面分类="Task">
+    <Columns>
+      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="TaskID" DataType="Int32" Description="任务" />
+      <Column Name="Kind" DataType="String" Description="种类" />
+      <Column Name="SrcValue" DataType="String" Description="原来的值" />
+      <Column Name="NewValue" DataType="String" Description="新的值" />
+      <Column Name="IP" DataType="String" Description="地址" />
+      <Column Name="SrcTaskID" DataType="Int32" Description="引发任务" />
+      <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
+      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
+      <Column Name="UpdateUserID" DataType="Int32" Description="更新者" />
+      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
+      <Column Name="Remark" DataType="String" Length="500" Description="备注" />
+    </Columns>
+    <Indexes>
+      <Index Columns="TaskID" />
+      <Index Columns="Kind" />
+      <Index Columns="TaskID,Kind" />
+    </Indexes>
+    <Relations>
+      <Relation Column="TaskID" RelationTable="WorkTask" RelationColumn="ID" />
+      <Relation Column="CreateUserID" RelationTable="User" RelationColumn="ID" />
+      <Relation Column="UpdateUserID" RelationTable="User" RelationColumn="ID" />
+    </Relations>
+  </Table>
+  <Table Name="TaskComment" Description="任务评论" DbType="SqlServer" 页面分类="Task">
+    <Columns>
+      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="TaskID" DataType="Int32" Description="任务" />
+      <Column Name="Title" DataType="String" Master="True" Description="标题" />
+      <Column Name="IP" DataType="String" Description="地址" />
+      <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
+      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
+      <Column Name="UpdateUserID" DataType="Int32" Description="更新者" />
+      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
+      <Column Name="Content" DataType="String" Length="-1" Description="内容" />
+    </Columns>
+    <Indexes>
+      <Index Columns="TaskID" />
+    </Indexes>
+    <Relations>
+      <Relation Column="TaskID" RelationTable="WorkTask" RelationColumn="ID" />
+      <Relation Column="CreateUserID" RelationTable="User" RelationColumn="ID" />
+      <Relation Column="UpdateUserID" RelationTable="User" RelationColumn="ID" />
+    </Relations>
+  </Table>
+</Tables>

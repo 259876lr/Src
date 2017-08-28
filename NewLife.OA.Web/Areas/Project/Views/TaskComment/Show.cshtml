@@ -1,0 +1,34 @@
+﻿@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@model EntityList<TaskComment>
+@{
+    Layout = "~/Views/Shared/_Ace_Layout.cshtml";
+
+    var task = ViewBag.Task as WorkTask;
+}
+<div class="panel panel-default">
+    <div class="panel-body">
+        @Html.Partial("_Form_Nav", task)
+    </div>
+    <div class="container">
+        <form action="@Url.Action("AddComment", new {id = task.ID})" method="post" role="form">
+            @Html.TextArea("content", new { @class = "form-control", @rows = "4", @placeholder = "请输入任务评论" })
+            <br />
+            <button type="submit" class="btn btn-yellow btn-xs">
+                <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
+
+                提交
+            </button>
+        </form>
+        <p></p>
+        @foreach (var entity in Model)
+        {
+            <div class="well well-sm">
+                <span> @entity.CreateUserName @entity.CreateTime.ToFullString() @entity.IP @entity.Address</span>
+                <br />
+                <span> @Html.Raw(@entity.Content)</span>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,29 @@
+﻿@{
+    var menu = ManageProvider.Menu.Current;
+}
+<li>
+    <i class="ace-icon fa fa-home home-icon"></i>
+    @if (menu != null)
+    {
+        foreach (IMenu item in menu.AllParents)
+        {
+            if (item.ID != 0)
+            {
+                <a href="@(item.Url!=null? Url.Content(item.Url):"#")">@item.DisplayName</a>
+
+            }
+        }
+    }
+</li>
+
+<li>
+    <a href="@Url.Action("Index", null, new { id = "" })">@(menu != null ? menu.DisplayName : ViewBag.Title)</a>
+</li>
+@{
+    // 如果有父任务，则在这里显示
+    var p = WorkTask.FindByID(ViewContext.RouteData.Values["id"].ToInt());
+}
+@if (p != null)
+{
+    <li>@p.Name</li>
+}
